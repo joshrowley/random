@@ -77,6 +77,9 @@ class Participant
   attr_reader :name
 
   def self.from_list(list)
+    list.map do |name|
+      new(name)
+    end
   end
 
   def initialize(name)
