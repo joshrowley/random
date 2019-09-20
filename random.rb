@@ -1,3 +1,5 @@
+require 'pry'
+
 session_list = [
   [1, 3, 2],
   [1, 4, 2],
@@ -71,6 +73,9 @@ class Session
     @id = id
     @time = time
   end
+
+  def add_participant(participant)
+  end
 end
 
 class Participant
@@ -85,6 +90,9 @@ class Participant
   def initialize(name)
     @name = name
   end
+
+  def add_session(session)
+  end
 end
 
 
@@ -97,7 +105,7 @@ end
 #
 
 class ScheduleGenerator
-  attr_reader :participants, :sessions
+  attr_reader :participants, :sessions, :schedule
 
   def initialize(participants, sessions)
     @participants = participants
@@ -105,10 +113,29 @@ class ScheduleGenerator
   end
 
   def random_schedule
-    puts "PARTICIPANTS"
-    puts participants.to_s
-    puts "SESSIONS"
-    puts sessions.to_s
+    puts "#{ sessions.length } sessions"
+    puts "#{ participants.length } participants"
+    puts "Creating schedule"
+
+    # each time block
+    sessions.each do |time_block|
+      pluck_copy = participants.dup
+      
+      time_block.cycle do |session|
+        participant = pluck_copy.delete_at(rand(pluck_copy.length))
+        pluck_copy.compact!
+        puts "PLUCK COPY LENGTH #{pluck_copy.length}"
+        participant.add_session(session)
+        session.add_participant(participant)
+        puts "Added #{participant.name} to session #{session.id} #{session.time}"
+        if pluck_copy.length == 0
+          break
+        end
+      end
+    end
+  end
+
+  def assign_participant(p, time_block)
   end
 end
 
