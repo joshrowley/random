@@ -166,10 +166,10 @@ end
 
 puts "\n\n\nSCHEDULE\n\n\n"
 
-topics.each do |topic|
-  topic.sessions.each do |session|
-    puts "\nSession #{session.time} w #{topic.facilitator}\n"
-    puts session.participants.map(&:name)
-    puts "\n\n"
-  end
+sessions = topics.map(&:sessions).flatten.sort_by(&:time)
+
+sessions.each do |session|
+  puts "\nSession #{session.time} w #{session.topic.facilitator}\n"
+  puts session.participants.map(&:name)
+  puts "\n\n"
 end
