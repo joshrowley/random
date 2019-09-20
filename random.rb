@@ -75,6 +75,40 @@ class Session
     @participants = []
   end
 
+  def name
+    "#{time} #{facilitator}"
+  end
+
+  def facilitator
+    case @id
+    when 1
+      "Adam Horowitz / Gabrielle Uballez"
+    when 2
+      "Pamela Villesenor"
+    when 3
+      "Autumn White Eyes"
+    when 4
+      "Halima Cassells"
+    when 5
+      "Marlene Cancio Ramirez"
+    end
+  end
+
+  def time
+    case @time
+    when 0
+      "A"
+    when 1
+      "B"
+    when 2
+      "C"
+    when 3
+      "D"
+    when 4
+      "E"
+    end
+  end
+
   def add_participant(participant)
     @participants << participant
   end
@@ -97,6 +131,10 @@ class Participant
   def add_session(session)
     @sessions << session
   end
+
+  def can_accept_session?(session)
+    !sessions.map(&:id).include?(session.id)
+  end
 end
 
 
@@ -116,6 +154,9 @@ class ScheduleGenerator
     @sessions = sessions
   end
 
+  def random_participant(pluck_copy)
+  end
+
   def random_schedule
     puts "#{ sessions.length } sessions"
     puts "#{ participants.length } participants"
@@ -123,35 +164,55 @@ class ScheduleGenerator
 
     # each time block
     sessions.each do |time_block|
-      pluck_copy = participants.dup
+      pluck_copy = participants.dup.shuffle
       
       time_block.cycle do |session|
-        participant = pluck_copy.delete_at(rand(pluck_copy.length))
+
+        match = false
+        until match
+          participant = pluck_copy.shift
+          # if !participant
+            # binding.pry
+          # end
+          if participant.can_accept_session?(session)
+            participant.add_session(session)
+            session.add_participant(participant)
+            puts "Added #{participant.name} to session #{session.id} #{session.time}"
+            match = true
+          else
+            puts "Didn't match #{participant.name}, retrying..."
+            pluck_copy.push(participant)
+
+            if pluck_copy.all? { |p| !p.can_accept_session?(session) }
+              puts "skipping to next session, no participants available"
+              next
+            end
+          end
+        end
+
         pluck_copy.compact!
-        participant.add_session(session)
-        session.add_participant(participant)
-        # puts "Added #{participant.name} to session #{session.id} #{session.time}"
+
         if pluck_copy.length == 0
           break
         end
       end
     end
 
-    puts "\n\nFINAL SCHEDULE\n\n"
-
     sessions.each_with_index do |seshes, i|
-      puts "\nSESSION TIME SLOT ##{i + 1}\n\n\n"
+      puts "\nSESSION #{seshes.first.time}\n\n\n"
 
       seshes.each do |s|
-        puts "Session ID #{ s.id } TIME #{ s.time }\n\n"
+        puts "Session #{ s.time } #{ s.facilitator }\n\n"
         
         puts s.participants.map(&:name)
         puts "\n\n"
       end
     end
-  end
 
-  def assign_participant(p, time_block)
+    participants.each do |p|
+      puts "\n\n #{p.name}'s schedule\n\n"
+      puts p.sessions.map(&:name)
+    end
   end
 end
 
