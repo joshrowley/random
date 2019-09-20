@@ -59,7 +59,7 @@ participant_list = [
 ]
 
 class Session
-  attr_reader :id, :time
+  attr_reader :id, :time, :participants
 
   def self.from_list(list)
     list.each_with_index.map do |session, index|
@@ -72,14 +72,16 @@ class Session
   def initialize(id, time)
     @id = id
     @time = time
+    @participants = []
   end
 
   def add_participant(participant)
+    @participants << participant
   end
 end
 
 class Participant
-  attr_reader :name
+  attr_reader :name, :sessions
 
   def self.from_list(list)
     list.map do |name|
@@ -89,9 +91,11 @@ class Participant
 
   def initialize(name)
     @name = name
+    @sessions = []
   end
 
   def add_session(session)
+    @sessions << session
   end
 end
 
@@ -124,13 +128,25 @@ class ScheduleGenerator
       time_block.cycle do |session|
         participant = pluck_copy.delete_at(rand(pluck_copy.length))
         pluck_copy.compact!
-        puts "PLUCK COPY LENGTH #{pluck_copy.length}"
         participant.add_session(session)
         session.add_participant(participant)
-        puts "Added #{participant.name} to session #{session.id} #{session.time}"
+        # puts "Added #{participant.name} to session #{session.id} #{session.time}"
         if pluck_copy.length == 0
           break
         end
+      end
+    end
+
+    puts "\n\nFINAL SCHEDULE\n\n"
+
+    sessions.each_with_index do |seshes, i|
+      puts "\nSESSION TIME SLOT ##{i + 1}\n\n\n"
+
+      seshes.each do |s|
+        puts "Session ID #{ s.id } TIME #{ s.time }\n\n"
+        
+        puts s.participants.map(&:name)
+        puts "\n\n"
       end
     end
   end
