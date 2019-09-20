@@ -121,7 +121,7 @@ class Participant
   end
 
   def register(session)
-    puts "#{name} registered for #{session.time} with #{session.topic.facilitator}"
+    # puts "#{name} registered for #{session.time} with #{session.topic.facilitator}"
     @registered_sessions.push(session)
   end
 
@@ -130,7 +130,6 @@ class Participant
   end
 
   def reset!
-    puts "#{name} reset!"
     @registered_sessions = []
   end
 
@@ -156,7 +155,11 @@ participants.shuffle.each do |participant|
   until participant.complete_registration?
     topics.each do |topic|
       allowed = participant.allowed_sessions(topic)
-      allowed.length == 0 ?  participant.reset! : participant.register(allowed.sample)
+      if allowed.length == 0
+        participant.reset!
+      else
+        participant.register(allowed.shuffle.sort_by{ |s| s.participants.length}.first)
+      end
     end
   end
 
@@ -169,7 +172,14 @@ puts "\n\n\nSCHEDULE\n\n\n"
 sessions = topics.map(&:sessions).flatten.sort_by(&:time)
 
 sessions.each do |session|
-  puts "\nSession #{session.time} w #{session.topic.facilitator}\n"
+  puts "\nSession #{session.time} w #{session.topic.facilitator} (#{session.participants.length} participants)\n"
   puts session.participants.map(&:name)
   puts "\n\n"
+end
+
+participants.each do |participant|
+  puts "\n\n#{participant.name}'s Schedule\n"
+  participant.registered_sessions.sort_by(&:time).each do |s|
+    puts "#{s.time} #{s.topic.facilitator}"
+  end
 end
