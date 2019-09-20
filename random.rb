@@ -133,6 +133,12 @@ class Participant
     puts "#{name} reset!"
     @registered_sessions = []
   end
+
+  def finalize_registration!
+    @registered_sessions.each do |session|
+      session.register(self)      
+    end
+  end
 end
 
 # shuffle participants
@@ -152,5 +158,18 @@ participants.shuffle.each do |participant|
       allowed = participant.allowed_sessions(topic)
       allowed.length == 0 ?  participant.reset! : participant.register(allowed.sample)
     end
+  end
+
+  participant.finalize_registration!
+end
+
+
+puts "\n\n\nSCHEDULE\n\n\n"
+
+topics.each do |topic|
+  topic.sessions.each do |session|
+    puts "\nSession #{session.time} w #{topic.facilitator}\n"
+    puts session.participants.map(&:name)
+    puts "\n\n"
   end
 end
